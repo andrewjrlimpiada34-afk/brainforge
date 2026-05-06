@@ -3,6 +3,10 @@
 import { useParams, useRouter } from 'next/navigation';
 import { Navbar } from '@/components/layout/Navbar';
 import { PatternRecall } from '@/components/games/PatternRecall';
+import { LogicSequence } from '@/components/games/LogicSequence';
+import { ChronoTap } from '@/components/games/ChronoTap';
+import { ArithmeticFlow } from '@/components/games/ArithmeticFlow';
+import { LexiconRecall } from '@/components/games/LexiconRecall';
 import { Button } from '@/components/ui/button';
 import { ChevronLeft } from 'lucide-react';
 import Link from 'next/link';
@@ -15,6 +19,14 @@ export default function GamePlayerPage() {
     switch(id) {
       case 'memory-pattern':
         return <PatternRecall />;
+      case 'logic-sequence':
+        return <LogicSequence />;
+      case 'speed-chrono':
+        return <ChronoTap />;
+      case 'math-arithmetic':
+        return <ArithmeticFlow />;
+      case 'verbal-lexicon':
+        return <LexiconRecall />;
       default:
         return (
           <div className="text-center py-20">

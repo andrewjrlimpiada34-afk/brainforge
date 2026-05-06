@@ -37,7 +37,7 @@ const DEFAULT_USER: UserProfile = {
     accuracy: 40
   },
   streak: 3,
-  unlockedGames: ['memory-pattern', 'logic-sequence']
+  unlockedGames: ['memory-pattern', 'logic-sequence', 'speed-chrono', 'math-arithmetic', 'verbal-lexicon']
 };
 
 const StateContext = createContext<StateContextType | undefined>(undefined);
@@ -91,10 +91,12 @@ export function StateProvider({ children }: { children: React.ReactNode }) {
     const xpGained = Math.round(score / 10);
     addXP(xpGained);
     
-    // Simple stat update logic
     const statMapping: Record<string, keyof CognitiveStats> = {
       'memory-pattern': 'memory',
-      'logic-sequence': 'logic'
+      'logic-sequence': 'logic',
+      'speed-chrono': 'speed',
+      'math-arithmetic': 'logic',
+      'verbal-lexicon': 'memory'
     };
 
     const targetStat = statMapping[gameId];
@@ -112,6 +114,11 @@ export function StateProvider({ children }: { children: React.ReactNode }) {
         };
       });
     }
+
+    toast({
+      title: "Module Complete",
+      description: `Synchronized ${xpGained} XP to neural profile.`,
+    });
   };
 
   return (
