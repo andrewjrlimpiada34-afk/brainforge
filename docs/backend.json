@@ -1,0 +1,631 @@
+{
+  "entities": {
+    "User": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "User",
+      "type": "object",
+      "description": "Represents a player's profile and overall progress in the BRAINFORGE app.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the User entity."
+        },
+        "name": {
+          "type": "string",
+          "description": "The full name of the user."
+        },
+        "username": {
+          "type": "string",
+          "description": "A unique public username chosen by the user."
+        },
+        "email": {
+          "type": "string",
+          "description": "The unique email address associated with the user's account.",
+          "format": "email"
+        },
+        "level": {
+          "type": "number",
+          "description": "The current experience level of the user, based on accumulated XP."
+        },
+        "xp": {
+          "type": "number",
+          "description": "The total experience points accumulated by the user across all game sessions and challenges."
+        },
+        "cognitiveStats": {
+          "type": "array",
+          "description": "An array of the user's current cognitive statistics across different categories. Each item represents a skill with its rating.",
+          "items": {
+            "type": "string"
+          }
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp when the user account was created.",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "Timestamp when the user profile was last updated.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "username",
+        "email",
+        "level",
+        "xp",
+        "cognitiveStats",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "GameModule": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "GameModule",
+      "type": "object",
+      "description": "Defines a specific type of brain training game available in the app (e.g., 'Pattern Recall', 'Number Sequences').",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the GameModule entity."
+        },
+        "name": {
+          "type": "string",
+          "description": "The display name of the game module (e.g., 'Pattern Recall')."
+        },
+        "description": {
+          "type": "string",
+          "description": "A brief description of what the game module entails and its objectives."
+        },
+        "category": {
+          "type": "string",
+          "description": "The cognitive category this game module primarily targets (e.g., 'Memory', 'Logic', 'Speed', 'Math')."
+        },
+        "baseDifficulty": {
+          "type": "number",
+          "description": "The initial or baseline difficulty level for this game module, used when starting a new game."
+        },
+        "unlockedAtLevel": {
+          "type": "number",
+          "description": "The user level required to unlock and play this game module."
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp when the game module definition was created.",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "Timestamp when the game module definition was last updated.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "description",
+        "category",
+        "baseDifficulty",
+        "unlockedAtLevel",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "GameSession": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "GameSession",
+      "type": "object",
+      "description": "Records a single instance of a user playing a specific game module, including performance metrics.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the GameSession entity."
+        },
+        "userId": {
+          "type": "string",
+          "description": "Reference to the User who played this game session. (Relationship: User 1:N GameSession)"
+        },
+        "gameModuleId": {
+          "type": "string",
+          "description": "Reference to the GameModule that was played in this session. (Relationship: GameModule 1:N GameSession)"
+        },
+        "startTime": {
+          "type": "string",
+          "description": "Timestamp when the game session started.",
+          "format": "date-time"
+        },
+        "endTime": {
+          "type": "string",
+          "description": "Timestamp when the game session ended.",
+          "format": "date-time"
+        },
+        "durationSeconds": {
+          "type": "number",
+          "description": "The total duration of the game session in seconds."
+        },
+        "difficultyLevel": {
+          "type": "number",
+          "description": "The specific difficulty level at which the game was played during this session."
+        },
+        "score": {
+          "type": "number",
+          "description": "The score achieved by the user in this game session, considering accuracy, speed, and difficulty."
+        },
+        "accuracy": {
+          "type": "number",
+          "description": "The accuracy percentage achieved by the user in this game session (0-100)."
+        },
+        "speed": {
+          "type": "number",
+          "description": "A metric representing the user's speed in the game session (e.g., average reaction time in milliseconds)."
+        },
+        "xpAwarded": {
+          "type": "number",
+          "description": "The experience points awarded to the user for completing this game session."
+        },
+        "cognitiveStatsImpact": {
+          "type": "array",
+          "description": "An array of delta values representing the impact of this session on the user's cognitive stats. Each item represents a skill with its delta value.",
+          "items": {
+            "type": "string"
+          }
+        },
+        "feedbackProvided": {
+          "type": "boolean",
+          "description": "Indicates whether personalized AI feedback was generated and provided for this game session."
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp when the game session record was created.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "userId",
+        "gameModuleId",
+        "startTime",
+        "endTime",
+        "durationSeconds",
+        "difficultyLevel",
+        "score",
+        "accuracy",
+        "speed",
+        "xpAwarded",
+        "cognitiveStatsImpact",
+        "createdAt"
+      ]
+    },
+    "Question": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Question",
+      "type": "object",
+      "description": "Stores individual questions or challenge configurations for game modules that require them.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Question entity."
+        },
+        "gameModuleId": {
+          "type": "string",
+          "description": "Reference to the GameModule this question belongs to. (Relationship: GameModule 1:N Question)"
+        },
+        "type": {
+          "type": "string",
+          "description": "The type of question or challenge (e.g., 'arithmetic', 'pattern_puzzle', 'deductive_reasoning')."
+        },
+        "content": {
+          "type": "string",
+          "description": "The actual content of the question, which could be text, an image URL, or a JSON string representing complex puzzle data."
+        },
+        "correctAnswer": {
+          "type": "string",
+          "description": "The expected correct answer for the question."
+        },
+        "difficultyRating": {
+          "type": "number",
+          "description": "A specific difficulty rating for this individual question, independent of overall game module difficulty."
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp when the question was created.",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "Timestamp when the question was last updated.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "gameModuleId",
+        "type",
+        "content",
+        "correctAnswer",
+        "difficultyRating",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "DailyChallenge": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "DailyChallenge",
+      "type": "object",
+      "description": "Defines a template for a daily challenge that users can complete for bonus rewards.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the DailyChallenge entity."
+        },
+        "name": {
+          "type": "string",
+          "description": "The name of the daily challenge (e.g., 'Memory Master Challenge')."
+        },
+        "description": {
+          "type": "string",
+          "description": "A brief description of the challenge and its completion goal."
+        },
+        "challengeType": {
+          "type": "string",
+          "description": "The type of challenge criteria (e.g., 'complete_games', 'achieve_score', 'play_specific_game_category')."
+        },
+        "targetValue": {
+          "type": "number",
+          "description": "The numeric target for completing the challenge (e.g., 3 games, 1000 score, 2 'Memory' games)."
+        },
+        "targetGameModuleId": {
+          "type": "string",
+          "description": "Optional reference to a specific GameModule if the challenge targets one. (Relationship: GameModule 0:1 DailyChallenge)"
+        },
+        "rewardXp": {
+          "type": "number",
+          "description": "The bonus experience points awarded for successfully completing this challenge."
+        },
+        "rewardAchievementId": {
+          "type": "string",
+          "description": "Optional reference to an Achievement awarded upon completing this challenge. (Relationship: Achievement 0:1 DailyChallenge)"
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp when the daily challenge definition was created.",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "Timestamp when the daily challenge definition was last updated.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "description",
+        "challengeType",
+        "targetValue",
+        "rewardXp",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "UserDailyChallenge": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "UserDailyChallenge",
+      "type": "object",
+      "description": "Tracks a user's progress and completion status for a specific daily challenge on a given day.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the UserDailyChallenge entity."
+        },
+        "userId": {
+          "type": "string",
+          "description": "Reference to the User who is attempting this daily challenge. (Relationship: User 1:N UserDailyChallenge)"
+        },
+        "dailyChallengeId": {
+          "type": "string",
+          "description": "Reference to the DailyChallenge definition being attempted. (Relationship: DailyChallenge 1:N UserDailyChallenge)"
+        },
+        "date": {
+          "type": "string",
+          "description": "The calendar date for which this specific daily challenge instance applies.",
+          "format": "date"
+        },
+        "progress": {
+          "type": "number",
+          "description": "The current progress of the user towards completing the challenge's target value."
+        },
+        "isCompleted": {
+          "type": "boolean",
+          "description": "Boolean indicating if the user has successfully completed the challenge."
+        },
+        "completedAt": {
+          "type": "string",
+          "description": "Timestamp when the user completed the challenge, if applicable.",
+          "format": "date-time"
+        },
+        "isClaimed": {
+          "type": "boolean",
+          "description": "Boolean indicating if the user has claimed the rewards for this completed challenge."
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp when this user's daily challenge instance was created.",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "Timestamp when this user's daily challenge instance was last updated.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "userId",
+        "dailyChallengeId",
+        "date",
+        "progress",
+        "isCompleted",
+        "isClaimed",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "Achievement": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Achievement",
+      "type": "object",
+      "description": "Defines an achievement that users can earn for reaching specific milestones or completing tasks.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Achievement entity."
+        },
+        "name": {
+          "type": "string",
+          "description": "The name of the achievement (e.g., 'Level 10 Master', 'First Blood')."
+        },
+        "description": {
+          "type": "string",
+          "description": "A detailed description of the criteria required to earn this achievement."
+        },
+        "criteria": {
+          "type": "string",
+          "description": "A programmatic description or rule set defining the conditions to earn this achievement (e.g., 'Reach Level 10', 'Score 1000 in a Memory Game')."
+        },
+        "rewardXp": {
+          "type": "number",
+          "description": "The experience points awarded to the user for earning this achievement."
+        },
+        "iconUrl": {
+          "type": "string",
+          "description": "An optional URL to an image or icon representing the achievement for display in the UI.",
+          "format": "uri"
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp when the achievement definition was created.",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "Timestamp when the achievement definition was last updated.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "description",
+        "criteria",
+        "rewardXp",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "UserAchievement": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "UserAchievement",
+      "type": "object",
+      "description": "Records which achievements a specific user has earned and when.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the UserAchievement entity."
+        },
+        "userId": {
+          "type": "string",
+          "description": "Reference to the User who earned this achievement. (Relationship: User 1:N UserAchievement)"
+        },
+        "achievementId": {
+          "type": "string",
+          "description": "Reference to the Achievement definition that was earned. (Relationship: Achievement 1:N UserAchievement)"
+        },
+        "earnedAt": {
+          "type": "string",
+          "description": "Timestamp when the user earned this achievement.",
+          "format": "date-time"
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp when this user achievement record was created.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "userId",
+        "achievementId",
+        "earnedAt",
+        "createdAt"
+      ]
+    }
+  },
+  "auth": {
+    "providers": [
+      "password",
+      "anonymous"
+    ]
+  },
+  "firestore": {
+    "structure": [
+      {
+        "path": "/users/{userId}",
+        "definition": {
+          "entityName": "User",
+          "schema": {
+            "$ref": "#/backend/entities/User"
+          },
+          "description": "Stores individual user profiles. Access is restricted to the authenticated user matching `userId`. Includes `id` field in the document (which matches `userId`) for authorization independence and explicit ownership."
+        }
+      },
+      {
+        "path": "/gameModules/{gameModuleId}",
+        "definition": {
+          "entityName": "GameModule",
+          "schema": {
+            "$ref": "#/backend/entities/GameModule"
+          },
+          "description": "Stores definitions for various brain training game modules. These are globally readable by all authenticated users and writable only by administrators.",
+          "params": [
+            {
+              "name": "gameModuleId",
+              "description": "The unique identifier for a specific game module."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/gameModules/{gameModuleId}/questions/{questionId}",
+        "definition": {
+          "entityName": "Question",
+          "schema": {
+            "$ref": "#/backend/entities/Question"
+          },
+          "description": "Stores individual questions or challenge configurations belonging to specific game modules. Globally readable for game logic execution, and writable only by administrators. Includes `gameModuleId` in the document for efficient queries and context.",
+          "params": [
+            {
+              "name": "gameModuleId",
+              "description": "The unique identifier of the parent game module."
+            },
+            {
+              "name": "questionId",
+              "description": "The unique identifier for a specific question."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/dailyChallenges/{dailyChallengeId}",
+        "definition": {
+          "entityName": "DailyChallenge",
+          "schema": {
+            "$ref": "#/backend/entities/DailyChallenge"
+          },
+          "description": "Stores templates for daily challenges. These are globally readable by all authenticated users and writable only by administrators.",
+          "params": [
+            {
+              "name": "dailyChallengeId",
+              "description": "The unique identifier for a daily challenge template."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/achievements/{achievementId}",
+        "definition": {
+          "entityName": "Achievement",
+          "schema": {
+            "$ref": "#/backend/entities/Achievement"
+          },
+          "description": "Stores definitions for various achievements. These are globally readable by all authenticated users and writable only by administrators.",
+          "params": [
+            {
+              "name": "achievementId",
+              "description": "The unique identifier for an achievement definition."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/gameSessions/{gameSessionId}",
+        "definition": {
+          "entityName": "GameSession",
+          "schema": {
+            "$ref": "#/backend/entities/GameSession"
+          },
+          "description": "Records individual game sessions played by a user. Access is restricted to the authenticated user matching `userId`. Includes `userId` in the document for authorization independence and efficient rule evaluation.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier of the user who played the game session."
+            },
+            {
+              "name": "gameSessionId",
+              "description": "The unique identifier for a specific game session."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/dailyChallenges/{userDailyChallengeId}",
+        "definition": {
+          "entityName": "UserDailyChallenge",
+          "schema": {
+            "$ref": "#/backend/entities/UserDailyChallenge"
+          },
+          "description": "Tracks a user's progress and completion status for specific daily challenges on a given day. Access is restricted to the authenticated user matching `userId`. Includes `userId` in the document for authorization independence.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier of the user attempting the daily challenge."
+            },
+            {
+              "name": "userDailyChallengeId",
+              "description": "The unique identifier for a specific user's daily challenge instance."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/achievements/{userAchievementId}",
+        "definition": {
+          "entityName": "UserAchievement",
+          "schema": {
+            "$ref": "#/backend/entities/UserAchievement"
+          },
+          "description": "Records achievements earned by a specific user. Access is restricted to the authenticated user matching `userId`. Includes `userId` in the document for authorization independence.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier of the user who earned the achievement."
+            },
+            {
+              "name": "userAchievementId",
+              "description": "The unique identifier for a specific user's achievement record."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/roles_admin/{adminUid}",
+        "definition": {
+          "entityName": "User",
+          "schema": {
+            "$ref": "#/backend/entities/User"
+          },
+          "description": "This collection is used for existence-based access control to grant administrative privileges. The mere existence of a document with `adminUid` matching `request.auth.uid` grants the user an administrative role. Documents here are typically empty or contain minimal data.",
+          "params": [
+            {
+              "name": "adminUid",
+              "description": "The unique user ID (UID) of an administrator."
+            }
+          ]
+        }
+      }
+    ],
+    "reasoning": "The Firestore structure is meticulously designed following the core principles of Authorization Independence, Structural Segregation, and Access Modeling to ensure security, scalability, and debuggability. This design prioritizes simple, robust, and easily debuggable security rules.\n\nAuthorization Independence (CRITICAL):\nUser-specific data (e.g., GameSession, UserDailyChallenge, UserAchievement) is consistently stored in subcollections under the `/users/{userId}/...` path. This automatically denormalizes the `userId` into the path itself, making it a direct identifier for authorization. Security rules can directly compare `request.auth.uid` with the `{userId}` wildcard in the path. Furthermore, each document in these subcollections explicitly includes the `userId` field (e.g., `gameSession.userId`, `userDailyChallenge.userId`), providing an additional, redundant check for robust rules (`request.auth.uid == resource.data.userId`). This design eliminates the need for expensive and non-atomic `get()` calls to parent documents for authorization, ensuring that operations on these subcollections are atomic, performant, and easily debuggable.\n\nQAPs (Rules are not Filters):\n1.  User-Specific Data: By strictly placing all user-specific data under `/users/{userId}`, any `list` operation initiated by an authenticated user is inherently scoped to `request.auth.uid`. For example, a user attempting to list `/users/myUserId/gameSessions` will only retrieve their own game sessions. Firestore security rules can straightforwardly enforce `allow list: if request.auth.uid == userId;`, guaranteeing that no unauthorized data is accidentally returned and fully supporting the Query-as-Permission principle.\n2.  Global Data: Collections such as `/gameModules`, `/dailyChallenges`, `/achievements`, and `/gameModules/{gameModuleId}/questions` contain global, read-only definitions. These are explicitly designed to be accessible for `list` operations by all authenticated users (or unauthenticated, if the content is public for display). This clear segregation ensures that global data is treated consistently as public-read (for game functionality) and admin-write, without requiring complex filtering in security rules for read access.\n\nStructural Segregation (Homogeneous Security Posture):\nEach collection or subcollection is intentionally designed to hold documents with a homogeneous security posture. For instance, all documents within `/users/{userId}/gameSessions` are owned by `{userId}`. Similarly, all documents in `/gameModules` are global definitions. This approach significantly simplifies security rules, as a single, clear rule can apply to an entire collection without needing complex conditional logic based on specific document content (e.g., preventing the mixing of public and private data within the same collection).\n\nAccess Modeling:\n1.  Private Data & Hierarchical Paths: User profiles (`/users/{userId}`) and their associated records (`/users/{userId}/gameSessions`, `/users/{userId}/dailyChallenges`, `/users/{userId}/achievements`) consistently utilize path-based ownership. The `userId` in the path directly corresponds to `request.auth.uid`, making ownership checks straightforward, efficient, and secure.\n2.  Global Definitions: Game modules, daily challenge templates, and achievement definitions are stored in top-level collections (`/gameModules`, `/dailyChallenges`, `/achievements`). These are globally readable by all users but only writable by administrators. Questions, being inherently tied to game modules, are nested under `gameModules/{gameModuleId}/questions`.\n3.  Global Roles (DBAC): An `/roles_admin/{adminUid}` collection is implemented for role-based access control, where the mere existence of a document with `adminUid` matching `request.auth.uid` signifies administrative privileges. This method avoids reliance on custom claims and centralizes role management within Firestore itself."
+  }
+}

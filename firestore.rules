@@ -1,0 +1,162 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    /**
+     * BRAINFORGE Security Rules
+     *
+     * Core Philosophy:
+     * This ruleset enforces a strict user-ownership model combined with role-based access control (RBAC) 
+     * for administrative functions. User data is strictly isolated within the /users/{userId} hierarchy.
+     *
+     * Data Structure:
+     * - /users/{userId}: Private user profiles and subcollections for game sessions, challenges, and achievements.
+     * - /gameModules: Public game definitions and nested questions.
+     * - /dailyChallenges, /achievements: Public game metadata.
+     * - /roles_admin: A collection where the existence of a document grants administrative privileges.
+     *
+     * Key Security Decisions:
+     * - Authorization Independence: User IDs are validated against both the URL path and internal document fields.
+     * - Query Security: Listing is restricted to the authenticated user's own data to ensure "Query-as-Permission".
+     * - Administrative Control: Writes to global game data are restricted to users listed in the roles_admin collection.
+     * - Prototyping Flexibility: Rules prioritize authorization (who can access) over strict schema validation (data shape).
+     */
+
+    // --- Helper Functions ---
+
+    /** @description Checks if the request is from a signed-in user. */
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    /** @description Checks if the user's email is verified via Firebase Auth. */
+    function isEmailVerified() {
+      return request.auth.token.email_verified == true;
+    }
+
+    /** @description Checks if the authenticated user matches the provided ID. */
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    /** @description Combines ownership check with document existence for updates and deletes. */
+    function isExistingOwner(userId) {
+      return resource != null && isOwner(userId);
+    }
+
+    /** @description Checks if the authenticated user has administrative privileges. */
+    function isAdmin() {
+      return isSignedIn() && exists(/databases/$(database)/documents/roles_admin/$(request.auth.uid));
+    }
+
+    // --- Collection Rules ---
+
+    /**
+     * @description Rules for user profile documents. Users can manage their own profiles.
+     * @path /users/{userId}
+     * @allow (create) if auth.uid matches userId and email is verified.
+     * @deny (get) if auth.uid does not match userId.
+     * @principle Ownership and Path Consistency.
+     */
+    match /users/{userId} {
+      allow get, list: if isOwner(userId);
+      allow create: if isOwner(userId) && isEmailVerified() && request.resource.data.id == userId;
+      allow update: if isExistingOwner(userId) && request.resource.data.id == resource.data.id;
+      allow delete: if isExistingOwner(userId);
+
+      /**
+       * @description User's personal game history. Restricted to the owner.
+       * @path /users/{userId}/gameSessions/{gameSessionId}
+       * @allow (list) if auth.uid == userId.
+       * @principle Subcollection Ownership.
+       */
+      match /gameSessions/{gameSessionId} {
+        allow get, list: if isOwner(userId);
+        allow create: if isOwner(userId) && request.resource.data.userId == userId;
+        allow update: if isExistingOwner(userId) && request.resource.data.userId == resource.data.userId;
+        allow delete: if isExistingOwner(userId);
+      }
+
+      /**
+       * @description User's daily challenge progress tracking. Restricted to the owner.
+       * @path /users/{userId}/dailyChallenges/{userDailyChallengeId}
+       * @allow (update) if is owner and document exists.
+       * @principle Relational Integrity for ownership fields.
+       */
+      match /dailyChallenges/{userDailyChallengeId} {
+        allow get, list: if isOwner(userId);
+        allow create: if isOwner(userId) && request.resource.data.userId == userId;
+        allow update: if isExistingOwner(userId) && request.resource.data.userId == resource.data.userId;
+        allow delete: if isExistingOwner(userId);
+      }
+
+      /**
+       * @description User's earned achievements. Restricted to the owner.
+       * @path /users/{userId}/achievements/{userAchievementId}
+       * @allow (get) if auth.uid == userId.
+       * @principle Authorization Independence.
+       */
+      match /achievements/{userAchievementId} {
+        allow get, list: if isOwner(userId);
+        allow create: if isOwner(userId) && request.resource.data.userId == userId;
+        allow update: if isExistingOwner(userId) && request.resource.data.userId == resource.data.userId;
+        allow delete: if isExistingOwner(userId);
+      }
+    }
+
+    /**
+     * @description Definitions of game modules. Readable by all players, writable by admins.
+     * @path /gameModules/{gameModuleId}
+     * @allow (list) if signed in.
+     * @deny (write) if not an admin.
+     * @principle Public Read with Admin-Only Writes.
+     */
+    match /gameModules/{gameModuleId} {
+      allow get, list: if isSignedIn();
+      allow create, update, delete: if isAdmin();
+
+      /**
+       * @description Questions associated with a game module.
+       * @path /gameModules/{gameModuleId}/questions/{questionId}
+       * @allow (get) if signed in.
+       * @principle Global access for game logic execution.
+       */
+      match /questions/{questionId} {
+        allow get, list: if isSignedIn();
+        allow create, update, delete: if isAdmin();
+      }
+    }
+
+    /**
+     * @description Daily challenge templates.
+     * @path /dailyChallenges/{dailyChallengeId}
+     * @allow (get) if signed in.
+     * @principle Public Read with Admin-Only Writes.
+     */
+    match /dailyChallenges/{dailyChallengeId} {
+      allow get, list: if isSignedIn();
+      allow create, update, delete: if isAdmin();
+    }
+
+    /**
+     * @description Global achievement definitions.
+     * @path /achievements/{achievementId}
+     * @allow (list) if signed in.
+     * @principle Public Read with Admin-Only Writes.
+     */
+    match /achievements/{achievementId} {
+      allow get, list: if isSignedIn();
+      allow create, update, delete: if isAdmin();
+    }
+
+    /**
+     * @description Administrative roles collection. Used for DBAC.
+     * @path /roles_admin/{adminUid}
+     * @allow (get, list, write) if false.
+     * @principle Secure role management (typically managed via Console/Backend).
+     */
+    match /roles_admin/{adminUid} {
+      allow get, list, create, update, delete: if false;
+    }
+  }
+}
