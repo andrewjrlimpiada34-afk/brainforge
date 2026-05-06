@@ -1,5 +1,6 @@
 import type {Metadata} from 'next';
 import './globals.css';
+import { FirebaseClientProvider } from '@/firebase/client-provider';
 import { StateProvider } from '@/components/providers/StateProvider';
 import { Toaster } from '@/components/ui/toaster';
 
@@ -21,10 +22,12 @@ export default function RootLayout({
         <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300..700&display=swap" rel="stylesheet" />
       </head>
       <body className="font-body antialiased bg-background text-foreground min-h-screen" suppressHydrationWarning>
-        <StateProvider>
-          {children}
-          <Toaster />
-        </StateProvider>
+        <FirebaseClientProvider>
+          <StateProvider>
+            {children}
+            <Toaster />
+          </StateProvider>
+        </FirebaseClientProvider>
       </body>
     </html>
   );
