@@ -1,0 +1,22 @@
+{
+  "placeholderImages": [
+    {
+      "id": "hero-brain",
+      "description": "Abstract futuristic digital brain",
+      "imageUrl": "https://picsum.photos/seed/brain1/1200/800",
+      "imageHint": "digital brain"
+    },
+    {
+      "id": "game-memory",
+      "description": "Visual patterns and dots",
+      "imageUrl": "https://picsum.photos/seed/mem/600/400",
+      "imageHint": "pattern dots"
+    },
+    {
+      "id": "game-logic",
+      "description": "Geometric shapes and puzzles",
+      "imageUrl": "https://picsum.photos/seed/logic/600/400",
+      "imageHint": "geometric shapes"
+    }
+  ]
+}
