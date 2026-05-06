@@ -14,7 +14,7 @@ const GenerateDailyChallengeInputSchema = z.object({
   userId: z.string().describe('The unique identifier of the user.'),
   performanceHistory: z.string().describe('A summary of the user\'s past game performance, highlighting strengths and weaknesses.'),
   gamePreferences: z.string().describe('A summary of the user\'s preferred game types and play styles.'),
-  unlockedGames: z.array(z.string()).describe('A list of game types currently unlocked and available to the user (e.g., "memory", "logic", "speed", "math").'),
+  unlockedGames: z.array(z.string()).describe('A list of game IDs currently unlocked and available to the user.'),
 });
 export type GenerateDailyChallengeInput = z.infer<typeof GenerateDailyChallengeInputSchema>;
 
@@ -23,7 +23,7 @@ const GenerateDailyChallengeOutputSchema = z.object({
   challengeTitle: z.string().describe('A concise and engaging title for the daily challenge.'),
   challengeDescription: z.string().describe('A detailed description of the challenge, including objectives and requirements.'),
   bonusXp: z.number().int().positive().describe('The amount of bonus experience points awarded upon completion of the challenge.'),
-  gameType: z.string().describe('The primary type of game associated with this challenge (e.g., "memory", "logic", "speed", "math"). Must be one of the unlocked games.'),
+  gameType: z.string().describe('The primary game ID associated with this challenge. MUST match exactly one of the provided unlockedGames IDs (e.g., "memory-pattern", "logic-sequence").'),
   targetAccuracy: z.number().min(0).max(100).optional().describe('The target accuracy percentage to achieve in the game, if applicable.'),
   targetCount: z.number().int().positive().optional().describe('The number of games or tasks to complete, if applicable.'),
 });
@@ -38,15 +38,15 @@ const prompt = ai.definePrompt({
   input: { schema: GenerateDailyChallengeInputSchema },
   output: { schema: GenerateDailyChallengeOutputSchema },
   prompt: `You are an AI assistant specialized in creating engaging and personalized daily brain-training challenges for the 'BRAINFORGE' app.
-Your goal is to generate a unique daily challenge tailored to the user's cognitive profile and preferences, selecting from available game types.
+Your goal is to generate a unique daily challenge tailored to the user's cognitive profile and preferences, selecting from available game IDs.
 
 User's performance history: {{{performanceHistory}}}
 User's game preferences: {{{gamePreferences}}}
-Available game types: {{#each unlockedGames}}'{{this}}'{{#unless @last}}, {{/unless}}{{/each}}
+Available game IDs: {{#each unlockedGames}}'{{this}}'{{#unless @last}}, {{/unless}}{{/each}}
 
-Generate a challenge that encourages improvement in weaker areas or builds upon strengths, aligned with their preferences. Ensure the challenge is clear, measurable, and motivating. The challengeId should be a unique string (e.g., a UUID or timestamp-based ID).
+Generate a challenge that encourages improvement in weaker areas or builds upon strengths, aligned with their preferences. Ensure the challenge is clear, measurable, and motivating. 
 
-The 'gameType' field in the output MUST be one of the available game types provided in 'unlockedGames'.`,
+CRITICAL: The 'gameType' field in the output MUST be EXACTLY one of the available game IDs provided in 'unlockedGames'. Do not shorten or generalize the ID (e.g., use 'memory-pattern', NOT 'memory').`,
 });
 
 const generateDailyChallengeFlow = ai.defineFlow(
