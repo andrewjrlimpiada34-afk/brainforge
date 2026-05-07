@@ -39,11 +39,12 @@
   body {
     @apply bg-background text-foreground;
     font-feature-settings: "rlig" 1, "calt" 1;
+    -webkit-tap-highlight-color: transparent;
   }
 }
 
 .glass-card {
-  @apply bg-card/60 backdrop-blur-lg border border-white/5;
+  @apply bg-card/60 backdrop-blur-lg border border-white/5 relative z-10;
 }
 
 .glow-primary {
@@ -52,4 +53,16 @@
 
 .glow-accent {
   box-shadow: 0 0 20px -5px hsl(var(--accent) / 0.5);
+}
+
+/* Ensure interactive elements are always on top */
+button, a {
+  @apply relative z-20;
+}
+
+/* Responsive container padding adjustments */
+@media (max-width: 640px) {
+  .container {
+    @apply px-4;
+  }
 }

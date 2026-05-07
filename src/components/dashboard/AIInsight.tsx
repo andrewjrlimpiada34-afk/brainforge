@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useAppState } from '@/components/providers/StateProvider';
 import { analyzePerformanceFeedback, type AnalyzePerformanceFeedbackOutput } from '@/ai/flows/analyze-performance-feedback';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { BrainCircuit, TrendingUp, Lightbulb } from 'lucide-react';
+import { BrainCircuit, TrendingUp, Lightbulb, Sparkles } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 
 export function AIInsight() {
@@ -39,48 +39,50 @@ export function AIInsight() {
     getInsight();
   }, [user.stats, user.username]);
 
-  if (loading) return <Skeleton className="h-64 w-full glass-card" />;
+  if (loading) return <Skeleton className="h-[280px] w-full glass-card rounded-2xl" />;
   if (!insight) return null;
 
   return (
-    <Card className="glass-card border-accent/20">
-      <CardHeader className="flex flex-row items-center gap-3">
-        <div className="p-2 bg-accent/20 rounded-lg">
+    <Card className="glass-card border-accent/20 rounded-2xl overflow-hidden h-full">
+      <CardHeader className="flex flex-row items-center gap-4 bg-accent/5 border-b border-accent/10 py-5">
+        <div className="p-3 bg-accent/20 rounded-xl glow-accent">
           <BrainCircuit className="text-accent h-6 w-6" />
         </div>
-        <div>
-          <CardTitle className="text-sm font-bold uppercase text-accent tracking-widest">Neural Analysis</CardTitle>
-          <p className="text-xs text-muted-foreground mt-0.5">Personalized AI Feedback</p>
+        <div className="space-y-0.5">
+          <CardTitle className="text-[10px] font-black uppercase text-accent tracking-[0.2em]">Neural Analysis</CardTitle>
+          <p className="text-xs text-muted-foreground font-bold flex items-center gap-1.5">
+            <Sparkles size={12} className="text-accent" /> Personalized Intelligence
+          </p>
         </div>
       </CardHeader>
-      <CardContent className="space-y-6">
-        <div>
-          <p className="text-sm italic text-muted-foreground leading-relaxed">
+      <CardContent className="space-y-6 pt-6">
+        <div className="relative">
+          <div className="absolute -left-2 top-0 bottom-0 w-1 bg-accent/30 rounded-full" />
+          <p className="text-sm italic text-muted-foreground leading-relaxed pl-4 font-medium">
             "{insight.summaryFeedback}"
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <h4 className="text-[10px] font-bold uppercase text-primary flex items-center gap-1">
-              <TrendingUp size={12} /> Strengths
+        <div className="grid grid-cols-1 gap-5">
+          <div className="space-y-3">
+            <h4 className="text-[10px] font-black uppercase text-primary flex items-center gap-2 tracking-widest">
+              <TrendingUp size={14} /> Core Strengths
             </h4>
-            <ul className="text-sm space-y-1">
+            <div className="flex flex-wrap gap-2">
               {insight.strengths.slice(0, 3).map((s, i) => (
-                <li key={i} className="flex items-start gap-2">
-                  <span className="text-primary mt-1 text-xs">•</span>
-                  <span>{s}</span>
-                </li>
+                <span key={i} className="text-[10px] font-bold px-3 py-1 bg-primary/10 text-primary border border-primary/20 rounded-full uppercase tracking-tighter">
+                  {s}
+                </span>
               ))}
-            </ul>
+            </div>
           </div>
-          <div className="space-y-2">
-            <h4 className="text-[10px] font-bold uppercase text-accent flex items-center gap-1">
-              <Lightbulb size={12} /> Optimization
+          <div className="space-y-3">
+            <h4 className="text-[10px] font-black uppercase text-accent flex items-center gap-2 tracking-widest">
+              <Lightbulb size={14} /> Critical Strategy
             </h4>
-            <div className="text-xs bg-white/5 p-3 rounded-lg border border-white/5">
-              <p className="font-bold text-accent mb-1">{insight.suggestionsForImprovement[0].category}</p>
-              <p className="text-muted-foreground">{insight.suggestionsForImprovement[0].strategy}</p>
+            <div className="text-xs bg-white/5 p-4 rounded-xl border border-white/10 group hover:border-accent/40 transition-colors">
+              <p className="font-black text-accent mb-1.5 uppercase tracking-wider">{insight.suggestionsForImprovement[0].category}</p>
+              <p className="text-muted-foreground leading-relaxed font-medium">{insight.suggestionsForImprovement[0].strategy}</p>
             </div>
           </div>
         </div>
