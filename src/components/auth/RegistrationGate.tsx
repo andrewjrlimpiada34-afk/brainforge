@@ -22,11 +22,14 @@ export function RegistrationGate({ children }: { children: ReactNode }) {
 
     const isAllowedPath = ALLOWED_UNREGISTERED_PATHS.includes(pathname);
 
+    // If the user is not registered, we *still* allow rendering the current route.
+    // The only automatic redirect here is to the verification page.
+    // (Prevents unexpected redirects on first load for logged-out users.)
     if (!isRegistered && !isAllowedPath) {
-      router.replace('/complete-profile');
       return;
     }
 
+    // If a fully-registered user somehow lands on /complete-profile, send them home.
     if (isRegistered && pathname === '/complete-profile') {
       router.replace('/');
     }
@@ -37,7 +40,8 @@ export function RegistrationGate({ children }: { children: ReactNode }) {
   }
 
   if (user && !isRegistered && !ALLOWED_UNREGISTERED_PATHS.includes(pathname)) {
-    return null;
+    // Don't block/redirect; let the page decide (e.g. /complete-profile itself).
+    return <>{children}</>;
   }
 
   if (user && isRegistered && pathname === '/complete-profile') {
