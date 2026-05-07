@@ -5,7 +5,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { useUser } from '@/firebase';
 import { useAppState } from '@/components/providers/StateProvider';
 
-const ALLOWED_UNREGISTERED_PATHS = ['/complete-profile', '/verify-email'];
+const ALLOWED_UNREGISTERED_PATHS = ['/verify-email'];
 
 export function RegistrationGate({ children }: { children: ReactNode }) {
   const { user, isUserLoading } = useUser();
