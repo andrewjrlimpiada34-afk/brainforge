@@ -41,6 +41,8 @@ export async function POST(request: NextRequest) {
       { upsert: true }
     );
 
+    // Persist the full profile shape so GET /api/profile returns all fields
+    // required by StateProvider (level/xp/stats/unlockedGames/etc.).
     await profiles.updateOne(
       { firebaseUid: decoded.uid },
       {
@@ -49,14 +51,14 @@ export async function POST(request: NextRequest) {
           createdAt: timestamp,
         },
         $set: {
-          fullName: profile.fullName,
-          username: profile.username,
+          ...profile,
           email: profile.email,
           updatedAt: timestamp,
         },
       },
       { upsert: true }
     );
+
 
     const savedProfile = await profiles.findOne({ firebaseUid: decoded.uid });
     return NextResponse.json(savedProfile);
