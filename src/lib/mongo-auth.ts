@@ -10,5 +10,17 @@ export async function requireAuthenticatedUser(request: NextRequest): Promise<De
   }
 
   const idToken = authorization.slice('Bearer '.length);
-  return getFirebaseAdminAuth().verifyIdToken(idToken);
+  try {
+    return await getFirebaseAdminAuth().verifyIdToken(idToken);
+  } catch (err: any) {
+    // Server-side debugging to pinpoint TLS/network vs token issues.
+    // Keep messages compact to avoid leaking sensitive token data.
+    console.error('[auth] verifyIdToken failed:', {
+      name: err?.name,
+      message: err?.message,
+      code: err?.code,
+      stack: err?.stack,
+    });
+    throw err;
+  }
 }
