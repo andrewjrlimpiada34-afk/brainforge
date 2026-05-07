@@ -3,6 +3,7 @@ import './globals.css';
 import { FirebaseClientProvider } from '@/firebase/client-provider';
 import { StateProvider } from '@/components/providers/StateProvider';
 import { Toaster } from '@/components/ui/toaster';
+import { AuthGate } from '@/components/auth/AuthGate';
 
 export const metadata: Metadata = {
   title: 'BRAINFORGE | Gamified Brain Training',
@@ -23,10 +24,12 @@ export default function RootLayout({
       </head>
       <body className="font-body antialiased bg-background text-foreground min-h-screen" suppressHydrationWarning>
         <FirebaseClientProvider>
-          <StateProvider>
-            {children}
-            <Toaster />
-          </StateProvider>
+          <AuthGate>
+            <StateProvider>
+              {children}
+              <Toaster />
+            </StateProvider>
+          </AuthGate>
         </FirebaseClientProvider>
       </body>
     </html>

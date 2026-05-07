@@ -24,7 +24,17 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      await signInWithEmailAndPassword(auth, email, password);
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+
+      if (!userCredential.user.emailVerified) {
+        toast({
+          title: "Verification Required",
+          description: "Verify your email before accessing BRAINFORGE.",
+        });
+        router.push('/verify-email');
+        return;
+      }
+
       toast({ title: "Access Granted", description: "Neural session re-established." });
       router.push('/');
     } catch (err: any) {

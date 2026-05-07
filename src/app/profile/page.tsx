@@ -2,19 +2,26 @@
 
 import { Navbar } from '@/components/layout/Navbar';
 import { useAppState } from '@/components/providers/StateProvider';
+import { useAuth, useUser } from '@/firebase';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { User, LogOut, Settings, Award, Shield, Calendar, ChevronRight } from 'lucide-react';
+import { User, LogOut, Settings, Award, Shield, Calendar, ChevronRight, BadgeCheck } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { signOut } from 'firebase/auth';
 
 export default function ProfilePage() {
   const { user } = useAppState();
+  const { user: authUser } = useUser();
+  const auth = useAuth();
+  const router = useRouter();
   const xpProgress = (user.xp / (user.level * 1000)) * 100;
+  const isEmailVerified = authUser?.emailVerified === true;
 
-  const handleSignOut = () => {
-    localStorage.removeItem('brainforge_user');
-    window.location.href = '/login';
+  const handleSignOut = async () => {
+    await signOut(auth);
+    router.replace('/login');
   };
 
   return (
@@ -39,11 +46,15 @@ export default function ProfilePage() {
           <div className="flex-1 text-center md:text-left space-y-6 w-full">
             <div className="space-y-1">
               <h1 className="text-3xl md:text-5xl font-headline font-bold tracking-tight">{user.username}</h1>
-              <div className="flex items-center justify-center md:justify-start gap-2">
+              <div className="flex flex-wrap items-center justify-center md:justify-start gap-2">
                 <span className="w-2 h-2 rounded-full bg-primary animate-pulse-primary" />
                 <p className="text-muted-foreground text-sm font-bold uppercase tracking-widest flex items-center gap-2">
                   Active Neural Operative
                 </p>
+                <span className="inline-flex items-center gap-1 rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-[10px] font-black uppercase tracking-widest text-primary">
+                  <BadgeCheck size={12} />
+                  {isEmailVerified ? 'Email Verified' : 'Email Pending'}
+                </span>
               </div>
             </div>
 

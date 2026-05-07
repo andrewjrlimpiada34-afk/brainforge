@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth, useFirestore } from '@/firebase';
-import { createUserWithEmailAndPassword } from 'firebase/auth';
+import { createUserWithEmailAndPassword, deleteUser, sendEmailVerification } from 'firebase/auth';
 import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -31,23 +31,36 @@ export default function RegisterPage() {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
 
-      // Create user profile in Firestore
-      await setDoc(doc(db, 'users', user.uid), {
-        id: user.uid,
-        name,
-        username,
-        email,
-        level: 1,
-        xp: 0,
-        cognitiveStats: ["Memory: 40", "Logic: 40", "Speed: 40", "Accuracy: 40"],
-        createdAt: serverTimestamp(),
-        updatedAt: serverTimestamp(),
-      });
+      try {
+        await setDoc(doc(db, 'users', user.uid), {
+          id: user.uid,
+          name,
+          username,
+          email,
+          level: 1,
+          xp: 0,
+          cognitiveStats: ["Memory: 40", "Logic: 40", "Speed: 40", "Accuracy: 40"],
+          createdAt: serverTimestamp(),
+          updatedAt: serverTimestamp(),
+        });
+      } catch (profileError) {
+        await deleteUser(user);
+        throw profileError;
+      }
 
-      toast({ title: "Welcome Operative", description: "Your neural link has been established." });
-      router.push('/');
+      await sendEmailVerification(user);
+
+      toast({
+        title: "Welcome Operative",
+        description: "Your profile is live. Check your inbox to verify your email."
+      });
+      router.push('/verify-email');
     } catch (err: any) {
-      toast({ variant: "destructive", title: "Authentication Failed", description: err.message });
+      toast({
+        variant: "destructive",
+        title: "Registration Failed",
+        description: err.message,
+      });
     } finally {
       setLoading(false);
     }
@@ -74,7 +87,7 @@ export default function RegisterPage() {
               <Input id="username" placeholder="neural_knight" value={username} onChange={(e) => setUsername(e.target.value)} required />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="email">Verified Email</Label>
+              <Label htmlFor="email">Email</Label>
               <Input id="email" type="email" placeholder="name@domain.com" value={email} onChange={(e) => setEmail(e.target.value)} required />
             </div>
             <div className="space-y-2">

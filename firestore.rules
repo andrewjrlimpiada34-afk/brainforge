@@ -54,13 +54,13 @@ service cloud.firestore {
     /**
      * @description Rules for user profile documents. Users can manage their own profiles.
      * @path /users/{userId}
-     * @allow (create) if auth.uid matches userId and email is verified.
+     * @allow (create) if auth.uid matches userId.
      * @deny (get) if auth.uid does not match userId.
      * @principle Ownership and Path Consistency.
      */
     match /users/{userId} {
       allow get, list: if isOwner(userId);
-      allow create: if isOwner(userId) && isEmailVerified() && request.resource.data.id == userId;
+      allow create: if isOwner(userId) && request.resource.data.id == userId;
       allow update: if isExistingOwner(userId) && request.resource.data.id == resource.data.id;
       allow delete: if isExistingOwner(userId);
 

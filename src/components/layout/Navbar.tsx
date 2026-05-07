@@ -2,10 +2,12 @@
 
 import Link from 'next/link';
 import { useAppState } from '@/components/providers/StateProvider';
-import { Brain, Trophy, User, LayoutDashboard, Target, LogOut } from 'lucide-react';
+import { useAuth, useUser } from '@/firebase';
+import { Brain, Trophy, User, LayoutDashboard, Target, LogOut, BadgeCheck } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
+import { signOut } from 'firebase/auth';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -17,12 +19,16 @@ import {
 
 export function Navbar() {
   const { user } = useAppState();
+  const { user: authUser } = useUser();
   const pathname = usePathname();
+  const router = useRouter();
+  const auth = useAuth();
   const xpProgress = (user.xp / (user.level * 1000)) * 100;
+  const isEmailVerified = authUser?.emailVerified === true;
 
-  const handleSignOut = () => {
-    localStorage.removeItem('brainforge_user');
-    window.location.href = '/login';
+  const handleSignOut = async () => {
+    await signOut(auth);
+    router.replace('/login');
   };
 
   return (
@@ -64,7 +70,13 @@ export function Navbar() {
               <DropdownMenuContent align="end" className="w-56 glass-card mt-2 border-white/10 p-2">
                 <DropdownMenuLabel className="px-3 py-2">
                   <p className="text-sm font-bold truncate">{user.username}</p>
-                  <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest mt-0.5">Neural Operative</p>
+                  <div className="mt-1 flex items-center gap-2">
+                    <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest">Neural Operative</p>
+                    <span className="inline-flex items-center gap-1 rounded-full border border-primary/20 bg-primary/10 px-2 py-0.5 text-[9px] font-black uppercase tracking-widest text-primary">
+                      <BadgeCheck size={10} />
+                      {isEmailVerified ? 'Email Verified' : 'Email Pending'}
+                    </span>
+                  </div>
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator className="bg-white/5" />
                 <DropdownMenuItem asChild className="focus:bg-primary/10 rounded-lg cursor-pointer">
