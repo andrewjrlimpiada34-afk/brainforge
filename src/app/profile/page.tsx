@@ -73,6 +73,7 @@ export default function ProfilePage() {
   };
 
   const handleFileChange = async (event: ChangeEvent<HTMLInputElement>) => {
+    console.log('[upload] file input change');
     const file = event.target.files?.[0];
     event.target.value = '';
 
@@ -112,21 +113,23 @@ export default function ProfilePage() {
         body: uploadFormData,
       });
 
-      const uploaded = await response.json();
+      const uploaded = await response.json().catch(() => null);
       if (!response.ok) {
-        throw new Error(uploaded.error || 'Unable to upload your profile image.');
+        throw new Error(uploaded?.error || `Unable to upload your profile image (status ${response.status}).`);
       }
 
-      applyLocalProfile({ photoURL: uploaded.secureUrl });
+      console.log('[upload] Cloudinary response:', uploaded);
+      applyLocalProfile({ photoURL: uploaded.secureUrl || uploaded.secure_url });
       toast({
         title: "Avatar Updated",
         description: "Your new profile photo has been synced.",
       });
     } catch (error: any) {
+      console.error('[upload] failed:', error);
       toast({
         variant: "destructive",
         title: "Upload Failed",
-        description: error.message || 'Unable to upload your profile image.',
+        description: error?.message || 'Unable to upload your profile image.',
       });
     } finally {
       setIsUploading(false);
