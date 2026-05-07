@@ -1,8 +1,10 @@
-import { createHash } from 'crypto';
 import { NextRequest, NextResponse } from 'next/server';
+import { v2 as cloudinary } from 'cloudinary';
 import { getDatabase } from '@/lib/mongodb';
 import { requireAuthenticatedUser } from '@/lib/mongo-auth';
 import { createDefaultProfile } from '@/lib/brainforge-profile';
+
+export const runtime = 'nodejs';
 
 function getRequiredEnv(name: string) {
   const value = process.env[name];
@@ -30,29 +32,36 @@ export async function POST(request: NextRequest) {
     const apiKey = getRequiredEnv('CLOUDINARY_API_KEY');
     const apiSecret = getRequiredEnv('CLOUDINARY_API_SECRET');
     const folder = process.env.CLOUDINARY_UPLOAD_FOLDER || 'brainforge/avatars';
-    const timestamp = Math.floor(Date.now() / 1000).toString();
-    const signatureBase = `folder=${folder}&timestamp=${timestamp}${apiSecret}`;
-    const signature = createHash('sha1').update(signatureBase).digest('hex');
 
-    const cloudinaryForm = new FormData();
-    cloudinaryForm.append('file', file);
-    cloudinaryForm.append('api_key', apiKey);
-    cloudinaryForm.append('folder', folder);
-    cloudinaryForm.append('timestamp', timestamp);
-    cloudinaryForm.append('signature', signature);
-
-    const uploadResponse = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
-      method: 'POST',
-      body: cloudinaryForm,
+    cloudinary.config({
+      cloud_name: cloudName,
+      api_key: apiKey,
+      api_secret: apiSecret,
     });
 
-    const uploadData = await uploadResponse.json();
-    if (!uploadResponse.ok) {
-      return NextResponse.json(
-        { error: uploadData.error?.message || 'Cloudinary upload failed.' },
-        { status: 502 }
+    const bytes = await file.arrayBuffer();
+    const buffer = Buffer.from(bytes);
+
+    const uploadData = await new Promise<{ secure_url: string; public_id: string }>((resolve, reject) => {
+      const stream = cloudinary.uploader.upload_stream(
+        {
+          folder,
+          resource_type: 'image',
+        },
+        (error, result) => {
+          if (error || !result) {
+            reject(error || new Error('Cloudinary upload failed.'));
+            return;
+          }
+          resolve({
+            secure_url: result.secure_url,
+            public_id: result.public_id,
+          });
+        }
       );
-    }
+
+      stream.end(buffer);
+    });
 
     const db = await getDatabase();
     const profiles = db.collection('profiles');
