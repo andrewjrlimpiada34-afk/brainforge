@@ -101,6 +101,8 @@ export function StateProvider({ children }: { children: ReactNode }) {
         }
 
         if (!response.ok) {
+          // If backend is temporarily unavailable, don't classify user as unregistered.
+          // Keep isRegistered=false only once the initial check has succeeded/failed definitively.
           throw new Error(data?.error || 'Unable to load profile.');
         }
 
