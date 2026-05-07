@@ -9,13 +9,16 @@ const ALLOWED_UNREGISTERED_PATHS = ['/complete-profile', '/verify-email'];
 
 export function RegistrationGate({ children }: { children: ReactNode }) {
   const { user, isUserLoading } = useUser();
-  const { isRegistered, isLoading } = useAppState();
+  const { isRegistered, isLoading, hasCheckedProfile } = useAppState();
   const pathname = usePathname();
   const router = useRouter();
 
   useEffect(() => {
-    if (isUserLoading || isLoading) return;
+    if (isUserLoading) return;
     if (!user) return;
+
+    // Only redirect after the initial profile fetch has completed.
+    if (!hasCheckedProfile) return;
 
     const isAllowedPath = ALLOWED_UNREGISTERED_PATHS.includes(pathname);
 
@@ -27,7 +30,7 @@ export function RegistrationGate({ children }: { children: ReactNode }) {
     if (isRegistered && pathname === '/complete-profile') {
       router.replace('/');
     }
-  }, [isLoading, isRegistered, isUserLoading, pathname, router, user]);
+  }, [hasCheckedProfile, isRegistered, isUserLoading, pathname, router, user, isLoading]);
 
   if (isUserLoading || isLoading) {
     return null;

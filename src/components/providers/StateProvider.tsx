@@ -32,6 +32,7 @@ type StateContextType = {
   user: UserProfile;
   isLoading: boolean;
   isRegistered: boolean;
+  hasCheckedProfile: boolean;
   hasProgress: boolean;
   completeGame: (gameId: string, score: number, accuracy: number, speed: number) => Promise<void>;
   updateProfile: (updates: ProfileUpdate) => Promise<void>;
@@ -57,9 +58,11 @@ function mapProfile(profile: Partial<BrainforgeProfile> | null | undefined, auth
       accuracy: clampStat(profile?.stats?.accuracy ?? fallback.stats.accuracy),
       math: clampStat(profile?.stats?.math ?? fallback.stats.math),
     },
-    streak: profile?.streak || fallback.streak,
-    unlockedGames: Array.isArray(profile?.unlockedGames) && profile!.unlockedGames!.length > 0 ? profile!.unlockedGames! : [...ALL_GAMES],
-    gamesPlayed: profile?.gamesPlayed || fallback.gamesPlayed,
+    streak: profile?.streak ?? fallback.streak,
+    // Important: treat empty-but-valid arrays as authoritative.
+    // Only fall back when the field is missing / not an array.
+    unlockedGames: Array.isArray(profile?.unlockedGames) ? profile!.unlockedGames! : [...ALL_GAMES],
+    gamesPlayed: profile?.gamesPlayed ?? fallback.gamesPlayed,
   };
 }
 
@@ -70,12 +73,14 @@ export function StateProvider({ children }: { children: ReactNode }) {
   const [profile, setProfile] = useState<UserProfile>(mapProfile(null));
   const [loading, setLoading] = useState(true);
   const [isRegistered, setIsRegistered] = useState(false);
+  const [hasCheckedProfile, setHasCheckedProfile] = useState(false);
 
   useEffect(() => {
     async function loadProfile() {
       if (!authUser) {
         setProfile(mapProfile(null));
         setIsRegistered(false);
+        setHasCheckedProfile(true);
         setLoading(false);
         return;
       }
@@ -106,6 +111,7 @@ export function StateProvider({ children }: { children: ReactNode }) {
         setIsRegistered(false);
         setProfile(mapProfile(null, { uid: authUser.uid, email: authUser.email }));
       } finally {
+        setHasCheckedProfile(true);
         setLoading(false);
       }
     }
@@ -182,6 +188,7 @@ export function StateProvider({ children }: { children: ReactNode }) {
         user: profile,
         isLoading: isUserLoading || loading,
         isRegistered,
+        hasCheckedProfile,
         hasProgress: profile.gamesPlayed > 0 || profile.xp > 0,
         completeGame,
         updateProfile,
