@@ -19,7 +19,15 @@ export async function requireAuthenticatedUser(request: NextRequest): Promise<De
       name: err?.name,
       message: err?.message,
       code: err?.code,
+      // helpful for TLS/runtime issues
       stack: err?.stack,
+    });
+
+    // Also log runtime + token length only (avoid leaking token)
+    console.error('[auth] verifyIdToken debug:', {
+      runtime: process.env.NEXT_RUNTIME,
+      nodeEnv: process.env.NODE_ENV,
+      idTokenLength: typeof idToken === 'string' ? idToken.length : undefined,
     });
     throw err;
   }
