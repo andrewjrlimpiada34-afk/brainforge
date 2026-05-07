@@ -8,25 +8,22 @@ import { BrainCircuit, TrendingUp, Lightbulb, Sparkles } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 
 export function AIInsight() {
-  const { user } = useAppState();
+  const { user, hasProgress } = useAppState();
   const [insight, setInsight] = useState<AnalyzePerformanceFeedbackOutput | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function getInsight() {
+      if (!hasProgress) {
+        setInsight(null);
+        setLoading(false);
+        return;
+      }
+
       try {
         const res = await analyzePerformanceFeedback({
           username: user.username,
-          gameResults: [
-            {
-              gameType: "Memory: Pattern Recall",
-              score: 850,
-              accuracy: 92,
-              speed: 1.2,
-              difficulty: "medium",
-              cognitiveAreasImpacted: ["Memory", "Accuracy"]
-            }
-          ],
+          gameResults: [],
           overallStats: user.stats
         });
         setInsight(res);
@@ -37,10 +34,31 @@ export function AIInsight() {
       }
     }
     getInsight();
-  }, [user.stats, user.username]);
+  }, [hasProgress, user.stats, user.username]);
 
   if (loading) return <Skeleton className="h-[280px] w-full glass-card rounded-2xl" />;
-  if (!insight) return null;
+  if (!insight) {
+    return (
+      <Card className="glass-card border-accent/20 rounded-2xl overflow-hidden h-full">
+        <CardHeader className="flex flex-row items-center gap-4 bg-accent/5 border-b border-accent/10 py-5">
+          <div className="p-3 bg-accent/20 rounded-xl glow-accent">
+            <BrainCircuit className="text-accent h-6 w-6" />
+          </div>
+          <div className="space-y-0.5">
+            <CardTitle className="text-[10px] font-black uppercase text-accent tracking-[0.2em]">Neural Analysis</CardTitle>
+            <p className="text-xs text-muted-foreground font-bold flex items-center gap-1.5">
+              <Sparkles size={12} className="text-accent" /> Waiting for first session
+            </p>
+          </div>
+        </CardHeader>
+        <CardContent className="pt-6">
+          <p className="text-sm text-muted-foreground leading-relaxed">
+            Complete your first game to unlock personalized feedback, strengths, and training suggestions.
+          </p>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <Card className="glass-card border-accent/20 rounded-2xl overflow-hidden h-full">

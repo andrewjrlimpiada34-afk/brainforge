@@ -1,5 +1,6 @@
 "use client"
 
+import { type ReactNode } from 'react';
 import Link from 'next/link';
 import { useAppState } from '@/components/providers/StateProvider';
 import { useAuth, useUser } from '@/firebase';
@@ -16,6 +17,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 export function Navbar() {
   const { user } = useAppState();
@@ -25,6 +27,7 @@ export function Navbar() {
   const auth = useAuth();
   const xpProgress = (user.xp / (user.level * 1000)) * 100;
   const isEmailVerified = authUser?.emailVerified === true;
+  const avatarFallback = (user.username || 'OP').slice(0, 2).toUpperCase();
 
   const handleSignOut = async () => {
     await signOut(auth);
@@ -62,8 +65,13 @@ export function Navbar() {
 
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <button className="relative w-10 h-10 rounded-xl bg-white/5 hover:bg-white/10 flex items-center justify-center border border-white/10 transition-all duration-300 group">
-                  <User className="h-5 w-5 text-muted-foreground group-hover:text-primary transition-colors" />
+                <button className="relative w-10 h-10 rounded-xl bg-white/5 hover:bg-white/10 flex items-center justify-center border border-white/10 transition-all duration-300 group overflow-hidden">
+                  <Avatar className="h-full w-full rounded-xl">
+                    <AvatarImage src={user.photoURL} alt={`${user.username} avatar`} />
+                    <AvatarFallback className="rounded-xl bg-white/5 text-xs font-black text-muted-foreground group-hover:text-primary transition-colors">
+                      {user.photoURL ? avatarFallback : <User className="h-5 w-5" />}
+                    </AvatarFallback>
+                  </Avatar>
                   <div className="absolute -top-1 -right-1 w-3 h-3 bg-primary rounded-full border-2 border-background animate-pulse" />
                 </button>
               </DropdownMenuTrigger>
@@ -109,7 +117,7 @@ export function Navbar() {
   );
 }
 
-function NavLink({ href, icon, label, active }: { href: string; icon: React.ReactNode; label: string; active?: boolean }) {
+function NavLink({ href, icon, label, active }: { href: string; icon: ReactNode; label: string; active?: boolean }) {
   return (
     <Link 
       href={href} 

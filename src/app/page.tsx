@@ -1,5 +1,8 @@
 "use client"
 
+import { type ReactNode } from 'react';
+import Link from 'next/link';
+import { ArrowRight, Award, Flame, Sparkles, Target, Zap } from 'lucide-react';
 import { Navbar } from '@/components/layout/Navbar';
 import { useAppState } from '@/components/providers/StateProvider';
 import { StatsRadar } from '@/components/dashboard/StatsRadar';
@@ -7,18 +10,43 @@ import { DailyChallengeCard } from '@/components/dashboard/DailyChallengeCard';
 import { AIInsight } from '@/components/dashboard/AIInsight';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
-import { Target, Zap, Flame, Award, ArrowRight } from 'lucide-react';
-import Link from 'next/link';
+
+const STARTER_MODULES = [
+  {
+    id: 'memory-pattern',
+    title: 'Pattern Recall',
+    category: 'Memory',
+    description: 'Start with visual recall drills and build your first baseline.',
+  },
+  {
+    id: 'logic-sequence',
+    title: 'Neural Sequences',
+    category: 'Logic',
+    description: 'Train your reasoning speed with pattern-based problem solving.',
+  },
+  {
+    id: 'speed-chrono',
+    title: 'Chrono-Tap',
+    category: 'Speed',
+    description: 'Warm up your reflexes and establish your first reaction profile.',
+  },
+];
+
+function getRankLabel(level: number) {
+  if (level >= 25) return 'Elite';
+  if (level >= 15) return 'Advanced';
+  if (level >= 5) return 'Rising';
+  return 'Recruit';
+}
 
 export default function DashboardPage() {
-  const { user } = useAppState();
+  const { user, hasProgress } = useAppState();
 
   return (
     <div className="min-h-screen pb-20 bg-background">
       <Navbar />
-      
+
       <main className="container mx-auto px-4 pt-8 space-y-10">
-        {/* Hero Section */}
         <section className="grid grid-cols-1 xl:grid-cols-3 gap-8">
           <div className="xl:col-span-2 space-y-8">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
@@ -26,11 +54,15 @@ export default function DashboardPage() {
                 <h1 className="text-3xl md:text-4xl lg:text-5xl font-headline font-bold tracking-tight">
                   Welcome back, <span className="text-primary">{user.username}</span>
                 </h1>
-                <p className="text-muted-foreground text-sm md:text-base">Your neural pathways are ready for synchronization.</p>
+                <p className="text-muted-foreground text-sm md:text-base">
+                  {hasProgress
+                    ? 'Your neural pathways are warming up. Pick the next module and keep the momentum going.'
+                    : 'Your profile is clean and ready. Start your first session to generate live stats and AI guidance.'}
+                </p>
               </div>
               <div className="flex flex-wrap gap-3">
                 <StatBadge icon={<Flame className="text-orange-500 w-4 h-4 md:w-5 md:h-5" />} label="Streak" value={`${user.streak}d`} />
-                <StatBadge icon={<Award className="text-accent w-4 h-4 md:w-5 md:h-5" />} label="Rank" value="Novice" />
+                <StatBadge icon={<Award className="text-accent w-4 h-4 md:w-5 md:h-5" />} label="Rank" value={getRankLabel(user.level)} />
               </div>
             </div>
 
@@ -63,36 +95,26 @@ export default function DashboardPage() {
           </div>
         </section>
 
-        {/* Recommended Games Section */}
         <section className="space-y-8 pb-10">
           <div className="flex items-center justify-between border-b border-white/5 pb-4">
-            <h2 className="text-xl md:text-2xl font-headline font-bold">Recommended Modules</h2>
+            <h2 className="text-xl md:text-2xl font-headline font-bold">
+              {hasProgress ? 'Suggested Next Modules' : 'Start Your First Modules'}
+            </h2>
             <Link href="/games" className="text-sm text-primary flex items-center gap-1 hover:underline font-bold transition-all">
               View Library <ArrowRight size={14} />
             </Link>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            <GameCard 
-              title="Pattern Recall" 
-              category="Memory" 
-              difficulty="Medium" 
-              description="Memorize and repeat complex spatial sequences."
-              id="memory-pattern"
-            />
-            <GameCard 
-              title="Number Matrix" 
-              category="Logic" 
-              difficulty="Hard" 
-              description="Complete the logic sequence in the neural net."
-              id="logic-sequence"
-            />
-             <GameCard 
-              title="Chrono-Tap" 
-              category="Speed" 
-              difficulty="Easy" 
-              description="React to shifting stimuli with lightning precision."
-              id="speed-chrono"
-            />
+            {STARTER_MODULES.map((game) => (
+              <GameCard
+                key={game.id}
+                id={game.id}
+                title={game.title}
+                category={game.category}
+                description={game.description}
+                difficulty={hasProgress ? 'Recommended' : 'Starter'}
+              />
+            ))}
           </div>
         </section>
       </main>
@@ -100,7 +122,7 @@ export default function DashboardPage() {
   );
 }
 
-function StatBadge({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
+function StatBadge({ icon, label, value }: { icon: ReactNode; label: string; value: string }) {
   return (
     <div className="bg-card/40 border border-white/10 px-4 py-2.5 rounded-2xl flex items-center gap-3 backdrop-blur-sm">
       <div className="p-1.5 bg-white/5 rounded-lg">{icon}</div>
@@ -124,7 +146,7 @@ function SkillProgress({ label, value }: { label: string; value: number }) {
   );
 }
 
-function CardWrapper({ title, children }: { title: string; children: React.ReactNode }) {
+function CardWrapper({ title, children }: { title: string; children: ReactNode }) {
   return (
     <div className="glass-card p-6 rounded-2xl space-y-4">
       <h3 className="text-[10px] font-bold uppercase text-primary tracking-[0.2em]">{title}</h3>
@@ -133,7 +155,7 @@ function CardWrapper({ title, children }: { title: string; children: React.React
   );
 }
 
-function ActionButton({ href, icon, label }: { href: string; icon: React.ReactNode; label: string }) {
+function ActionButton({ href, icon, label }: { href: string; icon: ReactNode; label: string }) {
   return (
     <Link href={href} className="flex flex-col items-center justify-center gap-3 p-5 bg-white/5 hover:bg-primary/10 border border-white/10 rounded-2xl transition-all group overflow-hidden">
       <div className="p-3 bg-primary/10 rounded-xl group-hover:bg-primary group-hover:text-primary-foreground transition-all duration-300">

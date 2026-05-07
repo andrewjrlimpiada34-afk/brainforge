@@ -11,9 +11,12 @@ import { Skeleton } from '@/components/ui/skeleton';
 import Link from 'next/link';
 
 export function DailyChallengeCard() {
-  const { user } = useAppState();
+  const { user, hasProgress } = useAppState();
   const [challenge, setChallenge] = useState<GenerateDailyChallengeOutput | null>(null);
   const [loading, setLoading] = useState(true);
+  const gamePreference = hasProgress
+    ? 'Prefer recommendations based on actual performance history.'
+    : 'No preference data yet.';
 
   useEffect(() => {
     async function loadChallenge() {
@@ -21,7 +24,7 @@ export function DailyChallengeCard() {
         const res = await generateDailyChallenge({
           userId: user.username,
           performanceHistory: `Memory: ${user.stats.memory}, Logic: ${user.stats.logic}, Speed: ${user.stats.speed}, Accuracy: ${user.stats.accuracy}`,
-          gamePreferences: "Likes fast-paced pattern recognition",
+          gamePreferences: gamePreference,
           unlockedGames: user.unlockedGames
         });
         setChallenge(res);
@@ -32,7 +35,7 @@ export function DailyChallengeCard() {
       }
     }
     loadChallenge();
-  }, [user.username, user.stats, user.unlockedGames]);
+  }, [gamePreference, user.username, user.stats, user.unlockedGames]);
 
   if (loading) {
     return (
@@ -61,12 +64,16 @@ export function DailyChallengeCard() {
       
       <CardHeader>
         <CardTitle className="text-xs font-bold uppercase text-accent tracking-widest">Daily Objective</CardTitle>
-        <h3 className="text-2xl font-headline font-bold mt-2">{challenge.challengeTitle}</h3>
+        <h3 className="text-2xl font-headline font-bold mt-2">
+          {hasProgress ? challenge.challengeTitle : 'First Contact Challenge'}
+        </h3>
       </CardHeader>
 
       <CardContent>
         <p className="text-muted-foreground text-sm leading-relaxed">
-          {challenge.challengeDescription}
+          {hasProgress
+            ? challenge.challengeDescription
+            : 'Begin with a starter module to generate your first real performance baseline. From there, daily objectives will adapt to your actual play history.'}
         </p>
         
         <div className="mt-6 flex flex-wrap gap-4">
