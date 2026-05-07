@@ -2,9 +2,9 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAuth, useFirestore } from '@/firebase';
+import { useAuth } from '@/firebase';
+import { authenticatedFetch } from '@/lib/client-api';
 import { createUserWithEmailAndPassword, deleteUser, sendEmailVerification } from 'firebase/auth';
-import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -20,7 +20,6 @@ export default function RegisterPage() {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const auth = useAuth();
-  const db = useFirestore();
   const router = useRouter();
 
   const handleRegister = async (e: React.FormEvent) => {
@@ -32,20 +31,12 @@ export default function RegisterPage() {
       const user = userCredential.user;
 
       try {
-        await setDoc(doc(db, 'users', user.uid), {
-          id: user.uid,
-          name,
-          username,
-          email,
-          photoURL: '',
-          level: 1,
-          xp: 0,
-          streak: 0,
-          gamesPlayed: 0,
-          unlockedGames: ['memory-pattern', 'logic-sequence', 'speed-chrono', 'math-arithmetic', 'verbal-lexicon'],
-          cognitiveStats: ["Memory: 0", "Logic: 0", "Speed: 0", "Accuracy: 0"],
-          createdAt: serverTimestamp(),
-          updatedAt: serverTimestamp(),
+        await authenticatedFetch(user, '/api/profile/init', {
+          method: 'POST',
+          body: JSON.stringify({
+            fullName: name,
+            username,
+          }),
         });
       } catch (profileError) {
         await deleteUser(user);
