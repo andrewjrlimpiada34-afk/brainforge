@@ -7,6 +7,7 @@ import { BrainforgeLoadingScreen } from '@/components/layout/BrainforgeLoadingSc
 import { useUser } from '@/firebase';
 import { useAppState } from '@/components/providers/StateProvider';
 
+
 /**
  * Global app loader to prevent blank screens during auth/profile loading and route transitions.
  */

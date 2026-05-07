@@ -109,10 +109,13 @@ function Particles() {
 export function BrainforgeLoadingScreen({
   isLoading,
   initialProgress = 12,
-  title = 'Forging Your Mind...',
-  subtitle = 'Synchronizing modules and calibrating neural pathways',
+  title = 'Howdy, Mate',
+
+  subtitle = 'Forging Your Mind... ',
+
 }: BrainforgeLoadingScreenProps) {
   const [progress, setProgress] = useState(clamp(initialProgress, 0, 100));
+
 
   // While loading, keep progress moving (but don't fully complete until isLoading=false)
   useEffect(() => {
@@ -211,8 +214,9 @@ export function BrainforgeLoadingScreen({
                     {title}
                   </motion.h2>
                   <p className="text-sm md:text-base text-muted-foreground">
-                    {subtitle}
+                    Register / Login / Signup • Continue with Google
                   </p>
+
                 </div>
 
                 <div className="w-full space-y-3 mt-2">
