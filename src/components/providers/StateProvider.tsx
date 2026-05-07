@@ -2,7 +2,7 @@
 
 import { type ReactNode, createContext, useContext, useEffect, useState } from 'react';
 import { useFirestore, useUser } from '@/firebase';
-import { doc, getDoc, serverTimestamp, updateDoc } from 'firebase/firestore';
+import { doc, getDoc, serverTimestamp, setDoc, updateDoc } from 'firebase/firestore';
 import { toast } from '@/hooks/use-toast';
 
 export type CognitiveStats = {
@@ -198,10 +198,18 @@ export function StateProvider({ children }: { children: ReactNode }) {
 
     if (Object.keys(cleanedUpdates).length === 0) return;
 
-    await updateDoc(doc(db, 'users', authUser.uid), {
+    await setDoc(doc(db, 'users', authUser.uid), {
+      id: authUser.uid,
+      email: profile.email || authUser.email || '',
+      level: profile.level,
+      xp: profile.xp,
+      streak: profile.streak,
+      gamesPlayed: profile.gamesPlayed,
+      unlockedGames: profile.unlockedGames,
+      cognitiveStats: serializeCognitiveStats(profile.stats),
       ...cleanedUpdates,
       updatedAt: serverTimestamp(),
-    });
+    }, { merge: true });
 
     setProfile((prev) => ({
       ...prev,
@@ -226,14 +234,17 @@ export function StateProvider({ children }: { children: ReactNode }) {
     const nextStreak = Math.max(1, currentProfile.streak + 1);
 
     try {
-      await updateDoc(doc(db, 'users', authUser.uid), {
+      await setDoc(doc(db, 'users', authUser.uid), {
+        id: authUser.uid,
+        email: currentProfile.email || authUser.email || '',
         xp: nextXp,
         level: nextLevel,
         streak: nextStreak,
         gamesPlayed: nextGamesPlayed,
+        unlockedGames: currentProfile.unlockedGames,
         cognitiveStats: serializeCognitiveStats(nextStats),
         updatedAt: serverTimestamp(),
-      });
+      }, { merge: true });
 
       setProfile((prev) => ({
         ...prev,
