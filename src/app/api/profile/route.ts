@@ -13,49 +13,33 @@ export async function GET(request: NextRequest) {
     const db = await getDatabase();
     const profiles = db.collection('profiles');
     const users = db.collection('users');
+    const timestamp = nowIso();
 
-    let profile = await profiles.findOne({ firebaseUid: decoded.uid });
+    const profile = await profiles.findOne({ firebaseUid: decoded.uid });
 
     if (!profile) {
-      const defaultProfile = createDefaultProfile({
-        firebaseUid: decoded.uid,
-        email: decoded.email,
-      });
-      const timestamp = nowIso();
-
-      await users.updateOne(
-        { firebaseUid: decoded.uid },
-        {
-          $setOnInsert: {
-            firebaseUid: decoded.uid,
-            email: decoded.email || '',
-            createdAt: timestamp,
-          },
-          $set: {
-            username: defaultProfile.username,
-            updatedAt: timestamp,
-            lastLogin: timestamp,
-          },
-        },
-        { upsert: true }
+      return NextResponse.json(
+        { error: 'Profile not found.', registered: false },
+        { status: 404 }
       );
-
-      await profiles.updateOne(
-        { firebaseUid: decoded.uid },
-        {
-          $setOnInsert: {
-            ...defaultProfile,
-            createdAt: timestamp,
-          },
-          $set: {
-            updatedAt: timestamp,
-          },
-        },
-        { upsert: true }
-      );
-
-      profile = await profiles.findOne({ firebaseUid: decoded.uid });
     }
+
+    await users.updateOne(
+      { firebaseUid: decoded.uid },
+      {
+        $setOnInsert: {
+          firebaseUid: decoded.uid,
+          email: decoded.email || '',
+          createdAt: timestamp,
+        },
+        $set: {
+          username: profile.username,
+          updatedAt: timestamp,
+          lastLogin: timestamp,
+        },
+      },
+      { upsert: true }
+    );
 
     return NextResponse.json(profile);
   } catch (error: any) {
@@ -81,6 +65,11 @@ export async function PATCH(request: NextRequest) {
       return NextResponse.json({ error: 'No profile changes supplied.' }, { status: 400 });
     }
 
+    const existingProfile = await profiles.findOne({ firebaseUid: decoded.uid });
+    if (!existingProfile) {
+      return NextResponse.json({ error: 'Profile not found.', registered: false }, { status: 404 });
+    }
+
     await profiles.updateOne(
       { firebaseUid: decoded.uid },
       {
@@ -89,15 +78,8 @@ export async function PATCH(request: NextRequest) {
           email: decoded.email || '',
           updatedAt: timestamp,
         },
-        $setOnInsert: {
-          ...createDefaultProfile({
-            firebaseUid: decoded.uid,
-            email: decoded.email,
-          }),
-          createdAt: timestamp,
-        },
       },
-      { upsert: true }
+      { upsert: false }
     );
 
     await users.updateOne(

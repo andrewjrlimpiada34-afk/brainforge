@@ -4,6 +4,7 @@ import { FirebaseClientProvider } from '@/firebase/client-provider';
 import { StateProvider } from '@/components/providers/StateProvider';
 import { Toaster } from '@/components/ui/toaster';
 import { AuthGate } from '@/components/auth/AuthGate';
+import { RegistrationGate } from '@/components/auth/RegistrationGate';
 
 export const metadata: Metadata = {
   title: 'BRAINFORGE | Gamified Brain Training',
@@ -26,8 +27,10 @@ export default function RootLayout({
         <FirebaseClientProvider>
           <AuthGate>
             <StateProvider>
-              {children}
-              <Toaster />
+              <RegistrationGate>
+                {children}
+                <Toaster />
+              </RegistrationGate>
             </StateProvider>
           </AuthGate>
         </FirebaseClientProvider>

@@ -31,6 +31,7 @@ type ProfileUpdate = Partial<Pick<UserProfile, 'username' | 'fullName' | 'photoU
 type StateContextType = {
   user: UserProfile;
   isLoading: boolean;
+  isRegistered: boolean;
   hasProgress: boolean;
   completeGame: (gameId: string, score: number, accuracy: number, speed: number) => Promise<void>;
   updateProfile: (updates: ProfileUpdate) => Promise<void>;
@@ -68,20 +69,41 @@ export function StateProvider({ children }: { children: ReactNode }) {
   const { user: authUser, isUserLoading } = useUser();
   const [profile, setProfile] = useState<UserProfile>(mapProfile(null));
   const [loading, setLoading] = useState(true);
+  const [isRegistered, setIsRegistered] = useState(false);
 
   useEffect(() => {
     async function loadProfile() {
       if (!authUser) {
         setProfile(mapProfile(null));
+        setIsRegistered(false);
         setLoading(false);
         return;
       }
 
       try {
-        const response = await authenticatedFetch<BrainforgeProfile>(authUser, '/api/profile');
-        setProfile(mapProfile(response, { uid: authUser.uid, email: authUser.email }));
+        const token = await authUser.getIdToken();
+        const response = await fetch('/api/profile', {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        const data = await response.json().catch(() => null);
+
+        if (response.status === 404) {
+          setIsRegistered(false);
+          setProfile(mapProfile(null, { uid: authUser.uid, email: authUser.email }));
+          return;
+        }
+
+        if (!response.ok) {
+          throw new Error(data?.error || 'Unable to load profile.');
+        }
+
+        setIsRegistered(true);
+        setProfile(mapProfile(data as BrainforgeProfile, { uid: authUser.uid, email: authUser.email }));
       } catch (error) {
         console.error('Error loading profile:', error);
+        setIsRegistered(false);
         setProfile(mapProfile(null, { uid: authUser.uid, email: authUser.email }));
       } finally {
         setLoading(false);
@@ -100,10 +122,12 @@ export function StateProvider({ children }: { children: ReactNode }) {
       body: JSON.stringify(updates),
     });
 
+    setIsRegistered(true);
     setProfile(mapProfile(updated, { uid: authUser.uid, email: authUser.email }));
   };
 
   const applyLocalProfile = (updates: ProfileUpdate) => {
+    setIsRegistered(true);
     setProfile((prev) => ({
       ...prev,
       username: typeof updates.username === 'string' ? updates.username.trim() : prev.username,
@@ -157,6 +181,7 @@ export function StateProvider({ children }: { children: ReactNode }) {
       value={{
         user: profile,
         isLoading: isUserLoading || loading,
+        isRegistered,
         hasProgress: profile.gamesPlayed > 0 || profile.xp > 0,
         completeGame,
         updateProfile,

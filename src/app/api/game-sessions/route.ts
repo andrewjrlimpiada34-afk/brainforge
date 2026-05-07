@@ -30,33 +30,13 @@ export async function POST(request: NextRequest) {
     const games = db.collection('games');
 
     const timestamp = nowIso();
-    let profile = await profiles.findOne({ firebaseUid: decoded.uid });
+    const profile = await profiles.findOne({ firebaseUid: decoded.uid });
 
     if (!profile) {
-      const defaultProfile = createDefaultProfile({
-        firebaseUid: decoded.uid,
-        email: decoded.email,
-      });
-
-      await profiles.updateOne(
-        { firebaseUid: decoded.uid },
-        {
-          $setOnInsert: {
-            ...defaultProfile,
-            createdAt: timestamp,
-          },
-          $set: {
-            updatedAt: timestamp,
-          },
-        },
-        { upsert: true }
+      return NextResponse.json(
+        { error: 'Profile not found. Complete registration before playing.', registered: false },
+        { status: 403 }
       );
-
-      profile = await profiles.findOne({ firebaseUid: decoded.uid });
-    }
-
-    if (!profile) {
-      throw new Error('Profile not found.');
     }
 
     const progress = calculateNextProgress(profile, body);

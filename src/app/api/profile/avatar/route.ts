@@ -67,10 +67,14 @@ export async function POST(request: NextRequest) {
     const profiles = db.collection('profiles');
     const users = db.collection('users');
     const timestampIso = nowIso();
-    const defaultProfile = createDefaultProfile({
-      firebaseUid: decoded.uid,
-      email: decoded.email,
-    });
+    const existingProfile = await profiles.findOne({ firebaseUid: decoded.uid });
+
+    if (!existingProfile) {
+      return NextResponse.json(
+        { error: 'Profile not found. Complete registration before uploading an avatar.', registered: false },
+        { status: 403 }
+      );
+    }
 
     await profiles.updateOne(
       { firebaseUid: decoded.uid },
@@ -80,12 +84,8 @@ export async function POST(request: NextRequest) {
           email: decoded.email || '',
           updatedAt: timestampIso,
         },
-        $setOnInsert: {
-          ...defaultProfile,
-          createdAt: timestampIso,
-        },
       },
-      { upsert: true }
+      { upsert: false }
     );
 
     await users.updateOne(
@@ -97,7 +97,7 @@ export async function POST(request: NextRequest) {
         },
         $setOnInsert: {
           firebaseUid: decoded.uid,
-          username: defaultProfile.username,
+          username: existingProfile.username,
           createdAt: timestampIso,
         },
       },
