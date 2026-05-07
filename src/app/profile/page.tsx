@@ -7,7 +7,6 @@ import { BadgeCheck, Calendar, Camera, ChevronRight, LogOut, Save, Settings, Shi
 import { Navbar } from '@/components/layout/Navbar';
 import { useAppState } from '@/components/providers/StateProvider';
 import { useAuth, useUser } from '@/firebase';
-import { uploadProfileImage } from '@/lib/cloudinary';
 import { toast } from '@/hooks/use-toast';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -18,7 +17,7 @@ import { Label } from '@/components/ui/label';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 export default function ProfilePage() {
-  const { user, updateProfile } = useAppState();
+  const { user, updateProfile, applyLocalProfile } = useAppState();
   const { user: authUser } = useUser();
   const auth = useAuth();
   const router = useRouter();
@@ -97,8 +96,28 @@ export default function ProfilePage() {
 
     setIsUploading(true);
     try {
-      const uploaded = await uploadProfileImage(file);
-      await updateProfile({ photoURL: uploaded.secureUrl });
+      if (!authUser) {
+        throw new Error('You must be logged in to update your avatar.');
+      }
+
+      const uploadFormData = new FormData();
+      uploadFormData.append('file', file);
+
+      const token = await authUser.getIdToken();
+      const response = await fetch('/api/profile/avatar', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        body: uploadFormData,
+      });
+
+      const uploaded = await response.json();
+      if (!response.ok) {
+        throw new Error(uploaded.error || 'Unable to upload your profile image.');
+      }
+
+      applyLocalProfile({ photoURL: uploaded.secureUrl });
       toast({
         title: "Avatar Updated",
         description: "Your new profile photo has been synced.",

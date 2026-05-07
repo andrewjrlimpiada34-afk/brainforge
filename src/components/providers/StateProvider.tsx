@@ -34,6 +34,7 @@ type StateContextType = {
   hasProgress: boolean;
   completeGame: (gameId: string, score: number, accuracy: number, speed: number) => Promise<void>;
   updateProfile: (updates: ProfileUpdate) => Promise<void>;
+  applyLocalProfile: (updates: ProfileUpdate) => void;
 };
 
 function mapProfile(profile: Partial<BrainforgeProfile> | null | undefined, authFallback?: { uid: string; email?: string | null }): UserProfile {
@@ -102,6 +103,15 @@ export function StateProvider({ children }: { children: ReactNode }) {
     setProfile(mapProfile(updated, { uid: authUser.uid, email: authUser.email }));
   };
 
+  const applyLocalProfile = (updates: ProfileUpdate) => {
+    setProfile((prev) => ({
+      ...prev,
+      username: typeof updates.username === 'string' ? updates.username.trim() : prev.username,
+      fullName: typeof updates.fullName === 'string' ? updates.fullName.trim() : prev.fullName,
+      photoURL: typeof updates.photoURL === 'string' ? updates.photoURL : prev.photoURL,
+    }));
+  };
+
   const completeGame = async (gameId: string, score: number, accuracy: number, speed: number) => {
     if (!authUser) return;
 
@@ -150,6 +160,7 @@ export function StateProvider({ children }: { children: ReactNode }) {
         hasProgress: profile.gamesPlayed > 0 || profile.xp > 0,
         completeGame,
         updateProfile,
+        applyLocalProfile,
       }}
     >
       {children}
