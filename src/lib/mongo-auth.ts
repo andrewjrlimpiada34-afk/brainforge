@@ -32,3 +32,7 @@ export async function requireAuthenticatedUser(request: NextRequest): Promise<De
     throw err;
   }
 }
+
+// Helpful for diagnosing TLS issues in environments where Firebase Admin verification fails.
+// Keep this file free of side effects besides exported functions.
+

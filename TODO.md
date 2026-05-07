@@ -1,17 +1,9 @@
-# brainforge - Task checklist
+# TODO
 
-## Auth init + registration redirect fix
-- [ ] Investigate why `/complete-profile` renders on first load for logged-out users.
-- [ ] Ensure default route for unauthenticated users is `/login` (not `/complete-profile`).
-- [ ] Make loader show immediately on startup while auth/profile state resolves.
-- [ ] Ensure `CompleteProfilePage` renders only when:
-  - user is authenticated AND email verified AND backend indicates profile not initialized (404 from `/api/profile`)
-  - or explicit “incomplete registration” flag is true.
-- [ ] Fix any incorrect gating timing causing temporary false `isRegistered=false`.
-- [ ] Add proper loading-state handling so pages do not flash/redirect.
-- [ ] Improve gamer-style loading screen if needed (neon/glow, smooth transitions, responsive).
+- [x] Fix TypeScript errors:
+  - [x] Add `src/app/api/health/route.ts` (referenced by Next.js generated validator)
+  - [x] Update `src/components/ui/calendar.tsx` to avoid unsupported `react-day-picker` `components` keys
+- [ ] Re-run `npx tsc --noEmit` and ensure no TypeScript errors remain
+- [ ] Re-run `npm run lint` (optional if only type errors were present)
 
-## After code changes
-- [ ] Run `npm run typecheck`.
-- [ ] Run `npm run lint`.
-- [ ] Smoke test: logged out / logged in verified / logged in not registered.
+

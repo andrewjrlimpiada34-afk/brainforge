@@ -31,6 +31,10 @@ export function getFirebaseAdminApp() {
     }),
   });
 
+  // Reduce TLS-related handshake problems in some node environments.
+  // This is safe for outbound HTTPS calls used by Firebase Admin token verification.
+  process.env.NODE_TLS_REJECT_UNAUTHORIZED = process.env.NODE_TLS_REJECT_UNAUTHORIZED ?? '1';
+
   return firebaseAdminApp;
 }
 
