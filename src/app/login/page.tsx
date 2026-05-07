@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/firebase';
-import { signInWithEmailAndPassword } from 'firebase/auth';
+import { GoogleAuthProvider, signInWithPopup, signInWithEmailAndPassword } from 'firebase/auth';
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -18,6 +18,29 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const auth = useAuth();
   const router = useRouter();
+
+  const handleGoogleLogin = async () => {
+    setLoading(true);
+    try {
+      const provider = new GoogleAuthProvider();
+      await signInWithPopup(auth, provider);
+      // Google users may not be automatically verified; keep same verification gate.
+      if (auth.currentUser && !auth.currentUser.emailVerified) {
+        toast({
+          title: 'Verification Required',
+          description: 'Verify your email before accessing BRAINFORGE.',
+        });
+        router.push('/verify-email');
+        return;
+      }
+      toast({ title: 'Access Granted', description: 'Neural session re-established.' });
+      router.push('/');
+    } catch (err: any) {
+      toast({ variant: 'destructive', title: 'Google Sign-In Failed', description: err.message || 'Unknown error' });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -64,7 +87,10 @@ export default function LoginPage() {
               <Label htmlFor="password">Password</Label>
               <Input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
             </div>
-            <Button type="submit" className="w-full bg-primary font-bold mt-4" disabled={loading}>
+            <Button type="button" onClick={handleGoogleLogin} className="w-full bg-white text-foreground font-bold mt-4" disabled={loading}>
+              {loading ? 'Signing in...' : 'Sign in with Google'}
+            </Button>
+            <Button type="submit" className="w-full bg-primary font-bold mt-3" disabled={loading}>
               {loading ? 'Connecting...' : 'Synchronize'}
             </Button>
           </form>

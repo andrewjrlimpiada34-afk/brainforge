@@ -1,10 +1,15 @@
-import type {Metadata} from 'next';
-import './globals.css';
+import type { Metadata } from 'next';
+import '../app/globals.css';
+
+
 import { FirebaseClientProvider } from '@/firebase/client-provider';
 import { StateProvider } from '@/components/providers/StateProvider';
 import { Toaster } from '@/components/ui/toaster';
 import { AuthGate } from '@/components/auth/AuthGate';
 import { RegistrationGate } from '@/components/auth/RegistrationGate';
+import { GlobalLoadingProvider } from '@/components/layout/GlobalLoadingProvider';
+
+
 
 export const metadata: Metadata = {
   title: 'BRAINFORGE | Gamified Brain Training',
@@ -28,12 +33,15 @@ export default function RootLayout({
           <AuthGate>
             <StateProvider>
               <RegistrationGate>
-                {children}
-                <Toaster />
+                <GlobalLoadingProvider>
+                  {children}
+                  <Toaster />
+                </GlobalLoadingProvider>
               </RegistrationGate>
             </StateProvider>
           </AuthGate>
         </FirebaseClientProvider>
+
       </body>
     </html>
   );
